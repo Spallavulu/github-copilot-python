@@ -1,3 +1,4 @@
+import sudoku_logic
 import pytest
 from app import app
 
@@ -39,3 +40,22 @@ def test_check_solution_after_new_game(client):
 def test_invalid_route(client):
     response = client.get("/invalid")
     assert response.status_code == 404
+
+
+def test_generated_puzzle_is_valid():
+    puzzle, solution = sudoku_logic.generate_puzzle(clues=35)
+
+    assert len(puzzle) == sudoku_logic.SIZE
+    assert all(len(row) == sudoku_logic.SIZE for row in puzzle)
+    assert sudoku_logic.count_solutions(puzzle) == 1
+
+
+def test_difficulty_levels():
+    for clues in (35, 30, 25):
+        puzzle, _ = sudoku_logic.generate_puzzle(clues=clues)
+        prefilled = sum(
+            cell != sudoku_logic.EMPTY
+            for row in puzzle
+            for cell in row
+        )
+        assert prefilled == clues
